@@ -19,5 +19,13 @@
   },
   "dependencies": {
     "node-fetch": "^2.6.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emptygalaxy/http-television.git"
+  },
+  "bugs": {
+    "url": "https://github.com/emptygalaxy/http-television/issues"
+  },
+  "homepage": "https://github.com/emptygalaxy/http-television#readme"
 }
