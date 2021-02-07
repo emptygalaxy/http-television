@@ -1,0 +1,23 @@
+{
+  "name": "http-television",
+  "version": "0.0.1",
+  "description": "Controlling a TV using http requests",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "node dist/test.js"
+  },
+  "keywords": [
+    "television",
+    "http",
+    "api"
+  ],
+  "author": "Nick Timman",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node-fetch": "^2.5.8",
+    "typescript": "^4.1.3"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  }
+}
