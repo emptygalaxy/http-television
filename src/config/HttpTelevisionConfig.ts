@@ -50,4 +50,4 @@ export interface HttpTelevisionConfig {
     actions: HttpTelevisionActions;
 }
 
-export type RemoteKey = 'volumeUp'|'volumeDown'|'left'|'right'|'up'|'down'|'playPause'|'select'|'back'|'info'|'rewind'|'forward';
+export type RemoteKey = 'volumeUp'|'volumeDown'|'left'|'right'|'up'|'down'|'playPause'|'select'|'back'|'info'|'exit'|'rewind'|'forward';

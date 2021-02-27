@@ -47,16 +47,14 @@ export class HttpTelevision {
         if(this.config.global && this.config.global.headers) {
             for(let prop in this.config.global.headers) {
                 const key = prop.toString();
-                const value = this.config.global.headers[prop].toString();
-                headers[key] = value;
+                headers[key] = this.config.global.headers[prop].toString();
             }
         }
 
         if(action.headers) {
             for(let prop in action.headers) {
                 const key = prop.toString();
-                const value = action.headers[prop].toString();
-                headers[key] = value;
+                headers[key] = action.headers[prop].toString();
             }
         }
 
@@ -249,6 +247,10 @@ export class HttpTelevision {
 
     public back(callback?: (result: boolean) => void): void {
         this.pressKey('back', callback);
+    }
+
+    public exit(callback?: (result: boolean) => void): void {
+        this.pressKey('exit', callback);
     }
 
     public info(callback?: (result: boolean) => void): void {
