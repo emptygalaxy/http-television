@@ -1,6 +1,6 @@
 {
   "name": "http-television",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Controlling a TV using http requests",
   "main": "dist/index.js",
   "scripts": {
