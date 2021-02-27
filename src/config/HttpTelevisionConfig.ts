@@ -7,6 +7,7 @@ export interface HttpAction {
 
 export interface HttpInputAction extends HttpAction {
     label: string;
+    type?: string;
 }
 
 export interface HttpTelevisionActions {
