@@ -73,11 +73,15 @@ export class HttpTelevision {
             headers: headers,
         };
 
-        console.log(url, method, body, headers);
-        fetch(url, options).then(async (response: Response) => {
+        // console.log(url, method, body, headers);
+        fetch(url, options).then((response: Response) => {
             const result = response.status >= 200 && response.status < 300;
-            if(callback)
+            if (callback)
                 callback(result);
+        }).catch((err: any) => {
+            console.error(err);
+            if (callback)
+                callback(false);
         });
     }
 
@@ -207,10 +211,10 @@ export class HttpTelevision {
             return;
         }
 
-        this.performAction(action, () => {
+        this.performAction(action, (result: boolean) => {
             this.input = input;
             if(callback)
-                callback(false);
+                callback(result);
         });
     }
 

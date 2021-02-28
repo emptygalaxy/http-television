@@ -3,7 +3,7 @@ import {HttpTelevisionConfig} from "./config/HttpTelevisionConfig";
 
 const config = <HttpTelevisionConfig>{
     name: 'HTTP Television',
-    host: 'http://192.168.2.151',
+    host: 'http://127.0.0.1',
     global: {
         url: '/play',
         method: 'POST',
@@ -73,26 +73,43 @@ const config = <HttpTelevisionConfig>{
 
 const tv = new HttpTelevision(config);
 
-tv.powerOn();
-tv.volumeUp();
-tv.volumeDown();
-tv.setVolume(100);
+tv.powerOn(() => {
+    tv.volumeUp(() => {
+        tv.volumeDown(() => {
+            tv.setVolume(100, () => {
+                tv.info(() => {
+                    tv.up(() => {
+                        tv.down(() => {
+                            tv.left(() => {
+                                tv.right(() => {
+                                    tv.select(() => {
+                                        tv.back(() => {
+                                            tv.play(() => {
+                                                tv.pause(() => {
+                                                    tv.playPause(() => {
+                                                        tv.exit(() => {
+                                                            tv.setInput(0, () => {
+                                                                tv.togglePower(() => {
+                                                                    tv.powerOff(() => {
 
-tv.info();
-tv.up();
-tv.down();
-tv.left();
-tv.right();
-tv.select();
-tv.back();
-tv.play();
-tv.pause();
-tv.playPause();
-tv.exit();
-tv.getInput();
-tv.getVolume();
-tv.isActive();
-tv.setInput(0);
-
-tv.togglePower();
-tv.powerOff();
+                                                                        tv.getInput();
+                                                                        tv.getVolume();
+                                                                        tv.isActive();
+                                                                    });
+                                                                });
+                                                            });
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+});
