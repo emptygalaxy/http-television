@@ -209,6 +209,8 @@ export class HttpTelevision {
 
         this.performAction(action, () => {
             this.input = input;
+            if(callback)
+                callback(false);
         });
     }
 
