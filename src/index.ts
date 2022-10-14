@@ -1,5 +1,17 @@
-import {HttpAction, HttpInputAction, HttpTelevisionActions, HttpTelevisionConfig, RemoteKey} from "./config/HttpTelevisionConfig";
-import {HttpTelevision} from "./HttpTelevision";
+import {
+  HttpAction,
+  HttpInputAction,
+  HttpTelevisionActions,
+  HttpTelevisionConfig,
+  RemoteKey,
+} from './config/HttpTelevisionConfig';
+import {HttpTelevision} from './HttpTelevision';
 
 export {HttpTelevision};
-export {HttpTelevisionConfig, HttpTelevisionActions, HttpAction, HttpInputAction, RemoteKey}
+export {
+  HttpTelevisionConfig,
+  HttpTelevisionActions,
+  HttpAction,
+  HttpInputAction,
+  RemoteKey,
+};
