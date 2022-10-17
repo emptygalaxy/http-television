@@ -73,6 +73,7 @@ export class HttpTelevision {
       method: method,
       body: body,
       headers: headers,
+      timeout: action.timeout || this.config.global?.timeout,
     };
 
     // console.log(url, method, body, headers);

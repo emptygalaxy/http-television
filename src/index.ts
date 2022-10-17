@@ -8,7 +8,7 @@ import {
 import {HttpTelevision} from './HttpTelevision';
 
 export {HttpTelevision};
-export {
+export type {
   HttpTelevisionConfig,
   HttpTelevisionActions,
   HttpAction,

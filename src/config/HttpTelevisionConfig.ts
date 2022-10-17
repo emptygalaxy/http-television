@@ -3,6 +3,7 @@ export interface HttpAction {
     method?: string;
     headers?: {[key: string]: string};
     body?: string;
+    timeout?: number;
 }
 
 export interface HttpInputAction extends HttpAction {
