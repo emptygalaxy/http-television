@@ -1,15 +1,18 @@
 import {HttpTelevision} from './HttpTelevision';
 import {HttpTelevisionConfig} from './config/HttpTelevisionConfig';
+import {TelevisionEvent} from './TelevisionEvent';
 
 const config = <HttpTelevisionConfig>{
   name: 'HTTP Television',
-  host: 'http://127.0.0.1',
+  host: 'http://127.0.0.1:3000',
+  autoStandby: 5,
   global: {
     url: '/play',
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
     },
+    timeout: 1000,
   },
   actions: {
     powerToggle: {
@@ -75,6 +78,15 @@ const config = <HttpTelevisionConfig>{
 
 const tv = new HttpTelevision(config);
 
+tv.addListener(TelevisionEvent.TurnedOff, () => console.log('turned off'));
+tv.addListener(TelevisionEvent.TurnedOn, () => console.log('turned on'));
+tv.addListener(TelevisionEvent.ActiveChanged, () =>
+  console.log('turned on or off')
+);
+tv.addListener(TelevisionEvent.InputChanged, () =>
+  console.log('input changed')
+);
+
 tv.powerOn(() => {
   tv.volumeUp(() => {
     tv.volumeDown(() => {
@@ -91,13 +103,17 @@ tv.powerOn(() => {
                           tv.playPause(() => {
                             tv.exit(() => {
                               tv.setInput(0, () => {
-                                tv.togglePower(() => {
-                                  tv.powerOff(() => {
-                                    tv.getInput();
-                                    tv.getVolume();
-                                    tv.isActive();
+                                console.log('powered on?', tv.isActive());
+                                setTimeout(() => {
+                                  console.log('powered on?', tv.isActive());
+                                  tv.togglePower(() => {
+                                    tv.powerOff(() => {
+                                      tv.getInput();
+                                      tv.getVolume();
+                                      tv.isActive();
+                                    });
                                   });
-                                });
+                                }, 10000);
                               });
                             });
                           });

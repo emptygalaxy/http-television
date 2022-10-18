@@ -1,12 +1,19 @@
-import {
-  HttpAction,
-  HttpTelevisionConfig,
-  RemoteKey,
-} from './config/HttpTelevisionConfig';
+import {HttpTelevisionConfig} from './config/HttpTelevisionConfig';
 import Timeout = NodeJS.Timeout;
 import fetch, {Response} from 'node-fetch';
+import {EventEmitter} from 'events';
+import {TelevisionEvent} from './TelevisionEvent';
+import {HttpAction} from './config/HttpAction';
+import {RemoteKey} from './config/RemoteKey';
+import {LoggerInterface} from './LoggerInterface';
 
-export class HttpTelevision {
+/**
+ * @event TelevisionEvent.TurnedOn
+ * @event TelevisionEvent.TurnedOff
+ * @event TelevisionEvent.ActiveChanged
+ * @event TelevisionEvent.InputChanged
+ */
+export class HttpTelevision extends EventEmitter {
   private active = false;
   private playing = false;
   private input?: number;
@@ -16,7 +23,12 @@ export class HttpTelevision {
 
   private standByTimeout?: Timeout;
 
-  public constructor(private readonly config: HttpTelevisionConfig) {
+  public constructor(
+    private readonly config: HttpTelevisionConfig,
+    private readonly logger: LoggerInterface = console
+  ) {
+    super();
+
     this.volumeStep = config.volumeStep || 1;
     this.maxVolume = config.maxVolume || 100;
   }
@@ -33,8 +45,41 @@ export class HttpTelevision {
       if (action.url.indexOf('://') > -1) url = action.url;
       else url += action.url;
     }
-
+    this.logger.info(url);
     return url;
+  }
+
+  private performAction(
+    action: HttpAction,
+    label: string,
+    callback?: (result: boolean) => void
+  ): void {
+    this.logger.info('perform: ' + label);
+
+    const url = this.combineUrl(action);
+    const headers = this.combineHeaders(action);
+    const method =
+      action.method ||
+      (this.config.global && this.config.global.method) ||
+      'POST';
+    const body: string | undefined =
+      action.body || (this.config.global && this.config.global.body);
+    const options = {
+      method: method,
+      body: body,
+      headers: headers,
+      timeout: action.timeout || this.config.global?.timeout,
+    };
+
+    fetch(url, options)
+      .then((response: Response) => {
+        const result = response.status >= 200 && response.status < 300;
+        if (callback) callback(result);
+      })
+      .catch((err: Error) => {
+        this.logger.error(err);
+        if (callback) callback(false);
+      });
   }
 
   private combineHeaders(action: HttpAction): {[key: string]: string} {
@@ -55,37 +100,6 @@ export class HttpTelevision {
     }
 
     return headers;
-  }
-
-  private performAction(
-    action: HttpAction,
-    callback?: (result: boolean) => void
-  ): void {
-    const url = this.combineUrl(action);
-    const headers = this.combineHeaders(action);
-    const method =
-      action.method ||
-      (this.config.global && this.config.global.method) ||
-      'POST';
-    const body: string | undefined =
-      action.body || (this.config.global && this.config.global.body);
-    const options = {
-      method: method,
-      body: body,
-      headers: headers,
-      timeout: action.timeout || this.config.global?.timeout,
-    };
-
-    // console.log(url, method, body, headers);
-    fetch(url, options)
-      .then((response: Response) => {
-        const result = response.status >= 200 && response.status < 300;
-        if (callback) callback(result);
-      })
-      .catch((err: Error) => {
-        console.error(err);
-        if (callback) callback(false);
-      });
   }
 
   public isActive(): boolean {
@@ -109,6 +123,8 @@ export class HttpTelevision {
     const cb = (result: boolean) => {
       if (result) {
         this.active = true;
+        this.emit(TelevisionEvent.TurnedOn);
+        this.emit(TelevisionEvent.ActiveChanged);
 
         if (this.config.autoStandby && this.config.autoStandby > 0) {
           if (this.standByTimeout) clearTimeout(this.standByTimeout);
@@ -116,15 +132,20 @@ export class HttpTelevision {
             this.handleStandbyTimeout.bind(this),
             this.config.autoStandby * 1000
           );
+          this.logger.info(
+            'waiting for ' +
+              this.config.autoStandby +
+              ' seconds to turn off due to auto standby.'
+          );
         }
       }
       if (callback) callback(result);
     };
 
     if (this.config.actions.powerOn) {
-      this.performAction(this.config.actions.powerOn, cb);
+      this.performAction(this.config.actions.powerOn, 'powerOn', cb);
     } else if (this.config.actions.powerToggle) {
-      this.performAction(this.config.actions.powerToggle, cb);
+      this.performAction(this.config.actions.powerToggle, 'powerToggle', cb);
     }
   }
 
@@ -137,6 +158,8 @@ export class HttpTelevision {
     const cb = (result: boolean) => {
       if (result) {
         this.active = false;
+        this.emit(TelevisionEvent.TurnedOff);
+        this.emit(TelevisionEvent.ActiveChanged);
 
         if (this.standByTimeout) clearTimeout(this.standByTimeout);
       }
@@ -144,14 +167,17 @@ export class HttpTelevision {
     };
 
     if (this.config.actions.powerOff) {
-      this.performAction(this.config.actions.powerOff, cb);
+      this.performAction(this.config.actions.powerOff, 'powerOff', cb);
     } else if (this.config.actions.powerToggle) {
-      this.performAction(this.config.actions.powerToggle, cb);
+      this.performAction(this.config.actions.powerToggle, 'powerToggle', cb);
     }
   }
 
   private handleStandbyTimeout(): void {
+    this.logger.info('turn off due to auto standby');
     this.active = false;
+    this.emit(TelevisionEvent.TurnedOff);
+    this.emit(TelevisionEvent.ActiveChanged);
   }
 
   public togglePower(callback?: (result: boolean) => void): void {
@@ -161,7 +187,7 @@ export class HttpTelevision {
 
   public volumeUp(callback?: (result: boolean) => void): void {
     this.pressKey('volumeUp', (result: boolean) => {
-      if (result && this.volume + this.volumeStep < this.maxVolume)
+      if (result && this.volume + this.volumeStep <= this.maxVolume)
         this.volume += this.volumeStep;
 
       if (callback) callback(result);
@@ -170,7 +196,7 @@ export class HttpTelevision {
 
   public volumeDown(callback?: (result: boolean) => void): void {
     this.pressKey('volumeDown', (result: boolean) => {
-      if (result && this.volume - this.volumeStep > 0)
+      if (result && this.volume - this.volumeStep >= 0)
         this.volume -= this.volumeStep;
 
       if (callback) callback(result);
@@ -186,9 +212,9 @@ export class HttpTelevision {
 
         if (callback) callback(true);
       } else if (steps < 0) {
-        this.volumeDown();
-      } else if (steps > 0) {
         this.volumeUp();
+      } else if (steps > 0) {
+        this.volumeDown();
       }
     }, 100);
   }
@@ -198,14 +224,16 @@ export class HttpTelevision {
       ? this.config.actions.inputs[input]
       : undefined;
     if (!action) {
-      console.error('setInput to not configured input', input);
+      this.logger.error('setInput to not configured input', input);
       if (callback) callback(false);
 
       return;
     }
 
-    this.performAction(action, (result: boolean) => {
+    this.performAction(action, 'setInput', (result: boolean) => {
       this.input = input;
+      this.emit(TelevisionEvent.InputChanged);
+
       if (callback) callback(result);
     });
   }
@@ -213,13 +241,13 @@ export class HttpTelevision {
   public pressKey(key: RemoteKey, callback?: (result: boolean) => void): void {
     const action = this.config.actions[key];
     if (!action) {
-      console.error('pressKey not configured', key);
+      this.logger.error('pressKey not configured', key);
       if (callback) callback(false);
 
       return;
     }
 
-    this.performAction(action, callback);
+    this.performAction(action, 'pressKey(' + key + ')', callback);
   }
 
   public up(callback?: (result: boolean) => void): void {
@@ -266,9 +294,9 @@ export class HttpTelevision {
     };
 
     if (this.config.actions.play) {
-      this.performAction(this.config.actions.play, cb);
+      this.performAction(this.config.actions.play, 'play', cb);
     } else if (this.config.actions.playPause) {
-      this.performAction(this.config.actions.playPause, cb);
+      this.performAction(this.config.actions.playPause, 'playPause', cb);
     }
   }
 
@@ -284,9 +312,9 @@ export class HttpTelevision {
     };
 
     if (this.config.actions.pause) {
-      this.performAction(this.config.actions.pause, cb);
+      this.performAction(this.config.actions.pause, 'pause', cb);
     } else if (this.config.actions.playPause) {
-      this.performAction(this.config.actions.playPause, cb);
+      this.performAction(this.config.actions.playPause, 'playPause', cb);
     }
   }
 

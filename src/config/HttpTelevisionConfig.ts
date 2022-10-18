@@ -1,55 +1,47 @@
-export interface HttpAction {
-    url?: string;
-    method?: string;
-    headers?: {[key: string]: string};
-    body?: string;
-    timeout?: number;
-}
-
-export interface HttpInputAction extends HttpAction {
-    label: string;
-    type?: string;
-}
-
-export interface HttpTelevisionActions {
-    powerToggle?: HttpAction;
-    powerOn?: HttpAction;
-    powerOff?: HttpAction;
-
-    volumeUp?: HttpAction;
-    volumeDown?: HttpAction;
-
-    up?: HttpAction;
-    down?: HttpAction;
-    left?: HttpAction;
-    right?: HttpAction;
-
-    play?: HttpAction;
-    pause?: HttpAction;
-    playPause?: HttpAction;
-
-    rewind?: HttpAction;
-    forward?: HttpAction;
-
-    select?: HttpAction;
-    back?: HttpAction;
-    info?: HttpAction;
-    exit?: HttpAction;
-
-    inputs?: HttpInputAction[];
-}
+import { HttpAction } from "./HttpAction";
+import { HttpTelevisionActions } from "./HttpTelevisionActions";
 
 export interface HttpTelevisionConfig {
-    name: string;
-    host?: string;
+  /**
+   * Name of the television
+   * @type string
+   */
+  name: string;
 
-    autoStandby?: number;
+  /**
+   * Default host
+   * @type string
+   */
+  host?: string;
 
-    volumeStep?: number;
-    maxVolume?: number;
+  /**
+   * Auto standby time (in seconds)
+   * @type number
+   */
+  autoStandby?: number;
 
-    global?: HttpAction;
-    actions: HttpTelevisionActions;
+  /**
+   * Steps by which to increase the volume
+   * @type number
+   */
+  volumeStep?: number;
+
+  /**
+   * Maximum volume
+   * @type number
+   */
+  maxVolume?: number;
+
+  /**
+   * Default settings for each action
+   * @type HttpAction
+   */
+  global?: HttpAction;
+
+  /**
+   * Specific configuration for each action
+   * @type HttpTelevisionActions
+   */
+  actions: HttpTelevisionActions;
 }
 
-export type RemoteKey = 'volumeUp'|'volumeDown'|'left'|'right'|'up'|'down'|'playPause'|'select'|'back'|'info'|'exit'|'rewind'|'forward';
