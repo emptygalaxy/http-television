@@ -1,10 +1,12 @@
 import express from 'express';
 import {HttpTelevisionServer} from './HttpTelevisionServer';
 import bodyParser from 'body-parser';
+import helmet from "helmet";
 
 const server = new HttpTelevisionServer();
 
 const app = express();
+app.use(helmet());
 app.use(bodyParser.urlencoded({extended: false}));
 
 app.post('/play', server.handlePost.bind(server));
