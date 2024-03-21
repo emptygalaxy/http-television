@@ -52,7 +52,7 @@
   "homepage": "https://github.com/emptygalaxy/http-television#readme",
   "dependencies": {
     "body-parser": "^1.20.1",
-    "express": "^4.18.2",
+    "express": "^4.18.3",
     "helmet": "^6.0.0",
     "node-fetch": "^2.6.7"
   }
